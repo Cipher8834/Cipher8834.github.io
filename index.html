@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>干嘛猫</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* 基础动画定义 */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        @keyframes zoomInOut {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* 滚动平滑效果 */
+        html { scroll-behavior: smooth; }
+        /* 图片容器基础样式 */
+        .cat-img {
+            transition: all 0.3s ease;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        .cat-img:hover {
+            transform: scale(1.03);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.18);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen overflow-x-hidden">
+    <!-- 顶部视觉区：主图动态展示 -->
+    <header class="relative w-full h-screen flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-pink-50 to-blue-50 z-0"></div>
+        <!-- 漂浮装饰元素 -->
+        <div class="absolute top-20 left-10 w-20 h-20 opacity-70 animate-float" style="animation-duration: 6s;">
+            <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="w-full h-full object-cover rounded-full" alt="干嘛猫装饰">
+        </div>
+        <div class="absolute bottom-30 right-15 w-16 h-16 opacity-60 animate-float" style="animation-duration: 8s; animation-delay: 1s;">
+            <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="w-full h-full object-cover rounded-full" alt="干嘛猫装饰">
+        </div>
+        <!-- 主图 -->
+        <div class="relative z-10 w-[80%] max-w-2xl animate-zoomInOut" style="animation-duration: 10s;">
+            <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="w-full h-auto rounded-2xl shadow-2xl" alt="干嘛猫主图">
+        </div>
+        <!-- 向下滚动提示 -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <i class="fa-solid fa-chevron-down text-gray-400 text-2xl"></i>
+        </div>
+    </header>
+
+    <!-- 图片流区域：网格布局+渐入动画 -->
+    <section class="container mx-auto px-4 py-20">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- 图片1：延迟渐入 -->
+            <div class="cat-card animate-fadeIn" style="animation-delay: 0.2s; animation-duration: 0.8s;">
+                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="cat-img w-full h-80" alt="干嘛猫">
+            </div>
+            <!-- 图片2：延迟渐入 -->
+            <div class="cat-card animate-fadeIn" style="animation-delay: 0.4s; animation-duration: 0.8s;">
+                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="cat-img w-full h-96" alt="干嘛猫">
+            </div>
+            <!-- 图片3：延迟渐入 -->
+            <div class="cat-card animate-fadeIn" style="animation-delay: 0.6s; animation-duration: 0.8s;">
+                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="cat-img w-full h-80" alt="干嘛猫">
+            </div>
+            <!-- 图片4：延迟渐入 -->
+            <div class="cat-card animate-fadeIn" style="animation-delay: 0.8s; animation-duration: 0.8s;">
+                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="cat-img w-full h-96" alt="干嘛猫">
+            </div>
+            <!-- 图片5：延迟渐入 -->
+            <div class="cat-card animate-fadeIn" style="animation-delay: 1s; animation-duration: 0.8s;">
+                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="cat-img w-full h-80" alt="干嘛猫">
+            </div>
+            <!-- 图片6：延迟渐入 -->
+            <div class="cat-card animate-fadeIn" style="animation-delay: 1.2s; animation-duration: 0.8s;">
+                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="cat-img w-full h-96" alt="干嘛猫">
+            </div>
+        </div>
+    </section>
+
+    <!-- 全屏沉浸区：点击切换图片 -->
+    <section class="w-full h-[70vh] relative overflow-hidden my-20">
+        <div class="absolute inset-0 bg-black/10 z-0"></div>
+        <div class="relative z-10 w-full h-full flex items-center justify-center">
+            <div id="fullscreen-cat" class="w-[90%] max-w-4xl h-full flex items-center">
+                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="w-full h-auto max-h-[90%] rounded-2xl shadow-xl" alt="干嘛猫全屏">
+            </div>
+        </div>
+        <!-- 切换提示 -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-gray-500 text-sm">
+            <span>点击图片切换</span>
+        </div>
+    </section>
+
+    <!-- 底部悬浮交互区 -->
+    <footer class="bg-white py-10 border-t border-gray-100">
+        <div class="container mx-auto px-4 flex flex-col items-center">
+            <div class="w-24 h-24 mb-6 animate-float" style="animation-duration: 7s;">
+                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="w-full h-full object-cover rounded-full shadow-lg" alt="干嘛猫图标">
+            </div>
+            <div class="text-gray-400 text-sm">
+                <i class="fa-solid fa-cat mr-2"></i> 点击任意图片可放大查看
+            </div>
+        </div>
+    </footer>
+
+    <!-- 交互脚本：图片切换+放大查看 -->
+    <script>
+        // 图片数组（可替换为更多干嘛猫图片）
+        const catImages = [
+            "https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500",
+            "https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500",
+            "https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500",
+            "https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500"
+        ];
+        let currentImgIndex = 0;
+
+        // 全屏区域图片切换
+        const fullscreenCat = document.getElementById('fullscreen-cat').querySelector('img');
+        fullscreenCat.addEventListener('click', () => {
+            currentImgIndex = (currentImgIndex + 1) % catImages.length;
+            fullscreenCat.style.opacity = 0;
+            setTimeout(() => {
+                fullscreenCat.src = catImages[currentImgIndex];
+                fullscreenCat.style.opacity = 1;
+            }, 300);
+        });
+
+        // 所有图片点击放大（模态框效果）
+        const allCatImgs = document.querySelectorAll('.cat-img, header img');
+        allCatImgs.forEach(img => {
+            img.addEventListener('click', () => {
+                const modal = document.createElement('div');
+                modal.style.position = 'fixed';
+                modal.style.top = 0;
+                modal.style.left = 0;
+                modal.style.width = '100vw';
+                modal.style.height = '100vh';
+                modal.style.backgroundColor = 'rgba(0,0,0,0.9)';
+                modal.style.zIndex = 9999;
+                modal.style.display = 'flex';
+                modal.style.alignItems = 'center';
+                modal.style.justifyContent = 'center';
+                modal.style.cursor = 'zoom-out';
+
+                const modalImg = document.createElement('img');
+                modalImg.src = img.src;
+                modalImg.style.maxWidth = '90%';
+                modalImg.style.maxHeight = '90%';
+                modalImg.style.borderRadius = '8px';
+
+                modal.appendChild(modalImg);
+                document.body.appendChild(modal);
+                document.body.style.overflow = 'hidden';
+
+                modal.addEventListener('click', () => {
+                    document.body.removeChild(modal);
+                    document.body.style.overflow = 'auto';
+                });
+            });
+        });
+
+        // 滚动时图片渐入效果（针对网格布局）
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.cat-card').forEach(card => {
+            card.style.opacity = 0;
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
