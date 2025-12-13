@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>干嘛.....</title>
+    <title>你猜这是干什么的？</title>
     <style>
         * {
             margin: 0;
@@ -11,7 +11,6 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
-
         :root {
             --primary: #6200EE;
             --primary-light: #BB86FC;
@@ -19,11 +18,12 @@
             --card-dark: #1E1E1E;
             --text-primary: #FFFFFF;
             --text-secondary: #BBBBBB;
+            --text-error: #FF5252;
+            --text-warning: #FFC107;
             --border-radius: 12px;
             --shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
         body {
             background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2e 100%);
             min-height: 100vh;
@@ -33,7 +33,6 @@
             padding: 2rem 1rem;
             color: var(--text-primary);
         }
-
         .container {
             width: 100%;
             max-width: 600px;
@@ -44,17 +43,14 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: var(--transition);
         }
-
         .container:hover {
             transform: translateY(-5px);
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
         }
-
         .header {
             text-align: center;
             margin-bottom: 2.5rem;
         }
-
         .header h1 {
             font-size: 1.8rem;
             background: linear-gradient(90deg, var(--primary-light), var(--primary));
@@ -63,12 +59,10 @@
             color: transparent;
             margin-bottom: 0.5rem;
         }
-
         .header p {
             color: var(--text-secondary);
             font-size: 0.95rem;
         }
-
         .upload-area {
             border: 2px dashed rgba(255, 255, 255, 0.2);
             border-radius: var(--border-radius);
@@ -79,12 +73,10 @@
             margin-bottom: 2rem;
             position: relative;
         }
-
         .upload-area:hover {
             border-color: var(--primary);
             background-color: rgba(98, 0, 238, 0.05);
         }
-
         #fileInput {
             position: absolute;
             top: 0;
@@ -93,24 +85,21 @@
             height: 100%;
             opacity: 0;
             cursor: pointer;
+            accept: ".zip";
         }
-
         .upload-icon {
             font-size: 3rem;
             margin-bottom: 1rem;
             color: var(--primary-light);
         }
-
         .upload-text h3 {
             font-size: 1.1rem;
             margin-bottom: 0.3rem;
         }
-
         .upload-text p {
             color: var(--text-secondary);
             font-size: 0.85rem;
         }
-
         .convert-btn {
             width: 100%;
             padding: 1rem;
@@ -123,57 +112,184 @@
             cursor: pointer;
             transition: var(--transition);
             box-shadow: 0 4px 15px rgba(98, 0, 238, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
-
         .convert-btn:hover {
             transform: scale(1.02);
             box-shadow: 0 6px 20px rgba(98, 0, 238, 0.6);
         }
-
         .convert-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
-
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        .convert-btn.loading .loading-spinner {
+            display: block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         #status {
             margin-top: 1.5rem;
             text-align: center;
             font-size: 0.9rem;
-            color: var(--text-secondary);
             min-height: 1.2rem;
+            line-height: 1.5;
         }
-
+        .error-text {
+            color: var(--text-error);
+        }
+        .warning-text {
+            color: var(--text-warning);
+        }
+        .error-log-btn {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 82, 82, 0.1);
+            border: 1px solid var(--text-error);
+            border-radius: 6px;
+            color: var(--text-error);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .error-log-btn:hover {
+            background: rgba(255, 82, 82, 0.2);
+        }
         .footer {
             margin-top: 2.5rem;
             text-align: center;
             font-size: 0.8rem;
             color: var(--text-secondary);
         }
+        /* 弹窗样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: var(--card-dark);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-icon {
+            font-size: 1.5rem;
+            margin-right: 0.8rem;
+            color: var(--text-warning);
+        }
+        .modal-header h3 {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+        }
+        .modal-body {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        .modal-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-size: 0.9rem;
+        }
+        .modal-btn.confirm {
+            background: var(--primary);
+            color: white;
+        }
+        .modal-btn.confirm:hover {
+            background: var(--primary-light);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>干嘛....</h1>
-            <p>干嘛....</p>
+            <h1>哇哦</h1>
+            <p>喵喵喵</p>
         </div>
-
         <div class="upload-area">
             <input type="file" id="fileInput" accept=".zip">
-            <div class="upload-icon">🥵</div>
+            <div class="upload-icon">😱</div>
             <div class="upload-text">
-                <h3>点</h3>
-                <p>支持 ZIP 格式 · 转换后为 .mcpack 文件</p>
+                <h3>1+1等于几呢🧐</h3>
+                <p>我觉得这个24号混凝土应该拌肉酱</p>
             </div>
         </div>
-
-        <button class="convert-btn" id="convertBtn">开始转换</button>
-        <div id="status"></div>
-
+        <button class="convert-btn" id="convertBtn">
+            <span class="loading-spinner"></span>
+            开！
+        </button>
+        <div id="status">
+            <!-- 错误日志下载按钮将动态插入此处 -->
+        </div>
         <div class="footer">
-            <p>fvv</p>
+            <p>getPowerOfTwoSize</p>
+        </div>
+    </div>
+
+    <!-- 光影检测弹窗 -->
+    <div class="modal" id="shaderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon">⚠️</div>
+                <h3>检测到光影相关文件</h3>
+            </div>
+            <div class="modal-body">
+                您的！中包含光影（Shader）文件，本工具仅转换方块、物品、实体等纯小卡拉咪材质，将自动剔除以下内容：
+                <br><br>
+                - shaders/ 目录（光影核心代码）<br>
+                - 光影配置文件（.glsl/.fsh/.vsh 等）<br>
+                - 光影相关纹理（如光影特效小卡拉咪）
+                <br><br>
+                转换后将生成纯小卡拉咪！，可直接在基岩版运行。
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn confirm" id="confirmConvert">确认</button>
+            </div>
         </div>
     </div>
 
@@ -182,28 +298,85 @@
         const fileInput = document.getElementById('fileInput');
         const convertBtn = document.getElementById('convertBtn');
         const status = document.getElementById('status');
+        const shaderModal = document.getElementById('shaderModal');
+        const confirmConvertBtn = document.getElementById('confirmConvert');
         let selectedFile = null;
+        let errorLogData = null;
+        let zipInstance = null; // 存储解析后的ZIP实例
+        let hasShaderFiles = false; // 标记是否包含光影文件
+
+        // 弹窗控制
+        function showModal(modal) {
+            modal.classList.add('active');
+        }
+        function hideModal(modal) {
+            modal.classList.remove('active');
+        }
 
         // 监听文件选择
-        fileInput.addEventListener('change', (e) => {
+        fileInput.addEventListener('change', async (e) => {
             if (e.target.files.length > 0) {
                 selectedFile = e.target.files[0];
-                status.textContent = `已选择：${selectedFile.name}`;
-                convertBtn.disabled = false;
+                status.textContent = `已选择：${selectedFile.name}（正在检测文件结构...）`;
+                convertBtn.disabled = true;
+                clearErrorLog();
+
+                // 解析文件并检测是否包含光影
+                try {
+                    const jszip = new JSZip();
+                    zipInstance = await jszip.loadAsync(selectedFile);
+                    hasShaderFiles = checkShaderFiles(zipInstance.files);
+
+                    if (hasShaderFiles) {
+                        status.textContent = `已选择：${selectedFile.name}（检测到光影文件）`;
+                    } else {
+                        status.textContent = `已选择：${selectedFile.name}（纯小卡拉咪！）`;
+                    }
+                    convertBtn.disabled = false;
+                } catch (err) {
+                    showError(
+                        "文件解析失败：无法读取ZIP包内容",
+                        err,
+                        "ZIP文件检测",
+                        { 文件名: selectedFile.name, 错误信息: err.message }
+                    );
+                    convertBtn.disabled = false;
+                }
             } else {
                 selectedFile = null;
+                zipInstance = null;
+                hasShaderFiles = false;
                 status.textContent = "";
                 convertBtn.disabled = true;
+                clearErrorLog();
             }
         });
 
-        // 生成基岩版manifest.json
-        function createManifest() {
+        // 确认转换（弹窗按钮）
+        confirmConvertBtn.addEventListener('click', () => {
+            hideModal(shaderModal);
+            startConversion();
+        });
+
+        // 开始转换（按钮点击）
+        convertBtn.addEventListener('click', () => {
+            if (!selectedFile || !zipInstance) return;
+
+            // 有光影文件则显示弹窗，无则直接开始转换
+            if (hasShaderFiles) {
+                showModal(shaderModal);
+            } else {
+                startConversion();
+            }
+        });
+
+        // 生成基岩版核心清单文件
+        function createManifest(packName = "Converted Pure Texture Pack") {
             return {
                 format_version: 2,
                 header: {
-                    name: "Converted Texture Pack",
-                    description: "Converted from Java Edition",
+                    name: packName,
+                    description: "Java → 基岩 纯小卡拉咪！（已剔除光影）",
                     uuid: self.crypto.randomUUID(),
                     version: [1, 0, 0],
                     min_engine_version: [1, 19, 0]
@@ -216,57 +389,479 @@
             };
         }
 
-        // 转换逻辑
-        convertBtn.addEventListener('click', async () => {
-            if (!selectedFile) return;
+        // 生成默认！图标（基岩版必需）
+        async function createDefaultPackIcon() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#6200EE';
+            ctx.fillRect(0, 0, 64, 64);
+            ctx.fillStyle = 'white';
+            ctx.font = '16px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('MC', 32, 32);
+            ctx.fillText('纯材质', 32, 50);
+            return new Promise((resolve) => {
+                canvas.toBlob((blob) => resolve(blob), 'image/png');
+            });
+        }
 
-            const jszip = new JSZip();
-            status.textContent = "正在解析材质包...";
-            convertBtn.disabled = true;
+        // 校验是否为合法Java！（仅需包含纯小卡拉咪核心目录）
+        function isLegalJavaTexturePack(zipFiles) {
+            return Object.keys(zipFiles).some(path => 
+                path.startsWith('assets/minecraft/textures/blocks/') ||
+                path.startsWith('assets/minecraft/textures/items/') ||
+                path.startsWith('assets/minecraft/textures/entity/') ||
+                path.startsWith('assets/minecraft/textures/particle/') ||
+                path.startsWith('pack.mcmeta')
+            );
+        }
 
+        // 检测是否包含光影相关文件
+        function checkShaderFiles(zipFiles) {
+            const shaderKeywords = [
+                'shaders/', '.glsl', '.fsh', '.vsh', '.vert', '.frag',
+                'shader', '光影', 'lightmap'
+            ];
+            return Object.keys(zipFiles).some(path => 
+                shaderKeywords.some(keyword => path.toLowerCase().includes(keyword))
+            );
+        }
+
+        // 过滤文件：仅保留纯小卡拉咪，剔除光影、动画、着色器等无关内容
+        function isAllowedFile(path) {
+            // 允许的纯小卡拉咪目录
+            const allowedDirs = [
+                'assets/minecraft/textures/blocks/',
+                'assets/minecraft/textures/items/',
+                'assets/minecraft/textures/entity/',
+                'assets/minecraft/textures/particle/',
+                'assets/minecraft/textures/environment/',
+                'assets/minecraft/textures/gui/'
+            ];
+            // 禁止的文件类型/目录
+            const forbiddenKeywords = [
+                'shaders/', '.glsl', '.fsh', '.vsh', '.vert', '.frag',
+                'animation', 'anim', 'shader', '光影', 'lightmap',
+                '.mcmeta' // 剔除Java版动画配置文件
+            ];
+
+            // 仅允许指定目录下的图片文件
+            const isAllowedDir = allowedDirs.some(dir => path.startsWith(dir));
+            const isImageFile = path.endsWith('.png') || path.endsWith('.jpg');
+            const isForbidden = forbiddenKeywords.some(keyword => path.toLowerCase().includes(keyword));
+
+            return isAllowedDir && isImageFile && !isForbidden;
+        }
+
+        // 转换Java目录结构为基岩版（assets/minecraft/textures → textures）
+        function convertJavaPathToBedrock(path) {
+            const textureRegex = /^assets\/minecraft\/textures\/(.*)$/;
+            if (textureRegex.test(path)) {
+                // PNG透明材质转TGA格式（基岩版透明材质要求）
+                if (path.endsWith('.png') && isTransparentTexturePath(path)) {
+                    return `textures/${path.match(textureRegex)[1].replace('.png', '.tga')}`;
+                }
+                return `textures/${path.match(textureRegex)[1]}`;
+            }
+            return path;
+        }
+
+        // 判断是否为需要透明效果的材质路径（基岩版需TGA格式）
+        function isTransparentTexturePath(path) {
+            const transparentDirs = [
+                'textures/blocks/glass', 'textures/blocks/ice', 'textures/blocks/slime',
+                'textures/entity', 'textures/items', 'textures/particle'
+            ];
+            return transparentDirs.some(dir => path.includes(dir));
+        }
+
+        // 计算最接近的2的幂次方尺寸（基岩版小卡拉咪要求）
+        function getPowerOfTwoSize(size) {
+            if (size <= 0) return 16;
+            return Math.pow(2, Math.round(Math.log(size) / Math.log(2)));
+        }
+
+        // 缩放小卡拉咪到2的幂次方尺寸
+        async function scaleTextureToPowerOfTwo(arrayBuffer, originalWidth, originalHeight) {
+            const canvas = document.createElement('canvas');
+            const targetWidth = getPowerOfTwoSize(originalWidth);
+            const targetHeight = getPowerOfTwoSize(originalHeight);
+            
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+            const ctx = canvas.getContext('2d');
+            
+            // 加载原图（解决跨域）
+            const img = new Image();
+            img.src = URL.createObjectURL(new Blob([arrayBuffer]));
+            img.crossOrigin = 'anonymous';
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = () => reject(new Error(`图片加载失败`));
+            });
+            
+            // 缩放绘制（保持比例，避免拉伸）
+            ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+            URL.revokeObjectURL(img.src);
+            
+            // 导出为arraybuffer
+            return new Promise((resolve) => {
+                canvas.toBlob((blob) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsArrayBuffer(blob);
+                }, 'image/png');
+            });
+        }
+
+        // 检测图片尺寸是否为2的幂次方
+        async function checkImageSize(arrayBuffer) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.src = URL.createObjectURL(new Blob([arrayBuffer]));
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    const isPowerOfTwo = (n) => n > 0 && (n & (n - 1)) === 0;
+                    const valid = isPowerOfTwo(img.width) && isPowerOfTwo(img.height);
+                    resolve({
+                        valid,
+                        width: img.width,
+                        height: img.height,
+                        error: null
+                    });
+                    URL.revokeObjectURL(img.src);
+                };
+                img.onerror = () => {
+                    const error = new Error(`图片尺寸检测失败`);
+                    resolve({ valid: false, width: 0, height: 0, error });
+                    URL.revokeObjectURL(img.src);
+                };
+            });
+        }
+
+        // PNG转TGA格式（保留Alpha通道，适配基岩版透明材质，添加降级处理）
+        function pngToTga(arrayBuffer) {
             try {
-                const zip = await jszip.loadAsync(selectedFile);
-                const newZip = new JSZip();
+                const pngData = new Uint8Array(arrayBuffer);
+                const tgaHeader = new Uint8Array([
+                    0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 基础头部
+                    0, 0, 0, 0, // 宽度
+                    0, 0, 0, 0, // 高度
+                    32, // 32位色（RGBA）
+                    0 // 从上到下绘制
+                ]);
 
-                // 过滤文件并添加到新压缩包
-                for (const [path, fileObj] of Object.entries(zip.files)) {
-                    if (fileObj.dir || path.endsWith('.mcmeta')) continue;
-                    const content = await fileObj.async('arraybuffer');
-                    newZip.file(path, content);
+                // 遍历寻找IHDR块（增强容错）
+                let width = 0, height = 0;
+                let ihdrFound = false;
+                for (let i = 0; i < pngData.length - 8; i++) {
+                    if (pngData[i] === 0x49 && pngData[i+1] === 0x48 && pngData[i+2] === 0x44 && pngData[i+3] === 0x52) {
+                        const ihdrLength = (pngData[i-4] << 24) | (pngData[i-3] << 16) | (pngData[i-2] << 8) | pngData[i-1];
+                        if (ihdrLength === 13) {
+                            width = (pngData[i+8] << 24) | (pngData[i+9] << 16) | (pngData[i+10] << 8) | pngData[i+11];
+                            height = (pngData[i+12] << 24) | (pngData[i+13] << 16) | (pngData[i+14] << 8) | pngData[i+15];
+                            ihdrFound = true;
+                            break;
+                        }
+                    }
                 }
 
-                // 添加manifest文件
-                const manifest = createManifest();
-                newZip.file('manifest.json', JSON.stringify(manifest, null, 2));
+                if (!ihdrFound || width <= 0 || height <= 0) {
+                    throw new Error(`无法提取PNG有效尺寸`);
+                }
 
-                status.textContent = "正在生成 .mcpack 文件...";
-                // 打包下载
-                const mcpackBlob = await newZip.generateAsync({ 
-                    type: 'blob', 
+                // 填充TGA头部尺寸
+                tgaHeader[12] = width & 0xFF;
+                tgaHeader[13] = (width >> 8) & 0xFF;
+                tgaHeader[14] = (width >> 16) & 0xFF;
+                tgaHeader[15] = (width >> 24) & 0xFF;
+                tgaHeader[16] = height & 0xFF;
+                tgaHeader[17] = (height >> 8) & 0xFF;
+                tgaHeader[18] = (height >> 16) & 0xFF;
+                tgaHeader[19] = (height >> 24) & 0xFF;
+
+                // 提取像素数据（容错处理）
+                const pixelStart = 8 + 4 + 13 + 4; // 签名+IHDR长度+IHDR数据+CRC
+                const pixelDataLength = width * height * 4;
+                if (pixelStart + pixelDataLength > pngData.length) {
+                    throw new Error(`PNG像素数据不完整`);
+                }
+                const pixelData = pngData.slice(pixelStart, pixelStart + pixelDataLength);
+
+                // 合并头部和像素数据
+                const tgaData = new Uint8Array(tgaHeader.length + pixelData.length);
+                tgaData.set(tgaHeader, 0);
+                tgaData.set(pixelData, tgaHeader.length);
+                return tgaData.buffer;
+            } catch (err) {
+                // 降级处理：保留原PNG格式，不中断转换
+                console.warn(`PNG转TGA失败，降级保留原格式：${err.message}`);
+                status.innerHTML += `<br><span class="warning-text">⚠️ 部分透明小卡拉咪格式转换失败，已保留原格式</span>`;
+                return arrayBuffer;
+            }
+        }
+
+        // 生成详细错误日志
+        function generateErrorLog(error, step, extraInfo = {}) {
+            const browserInfo = {
+                userAgent: navigator.userAgent,
+                browserLanguage: navigator.language,
+                screenResolution: `${screen.width}x${screen.height}`,
+                canvasSupported: !!document.createElement('canvas').getContext('2d'),
+                zipSupport: typeof JSZip !== 'undefined'
+            };
+
+            const fileInfo = selectedFile ? {
+                fileName: selectedFile.name,
+                fileSize: `${(selectedFile.size / 1024).toFixed(2)}KB`,
+                fileType: selectedFile.type,
+                hasShaderFiles: hasShaderFiles
+            } : { fileName: '无', fileSize: '无', fileType: '无', hasShaderFiles: false };
+
+            const errorDetails = {
+                timestamp: new Date().toLocaleString('zh-CN', { 
+                    year: 'numeric', month: '2-digit', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                }),
+                errorType: error.name,
+                errorMessage: error.message,
+                errorStack: error.stack || '无堆栈信息',
+                errorStep: step,
+                extraInfo: extraInfo
+            };
+
+            const logText = `
+MC！跨版转换器（纯材质版）- 错误日志
+========================================
+日志生成时间：${errorDetails.timestamp}
+========================================
+一、浏览器环境信息
+- 用户代理：${browserInfo.userAgent}
+- 浏览器语言：${browserInfo.browserLanguage}
+- 屏幕分辨率：${browserInfo.screenResolution}
+- Canvas支持：${browserInfo.canvasSupported ? '是' : '否'}
+- JSZip支持：${browserInfo.zipSupport ? '是' : '否'}
+========================================
+二、文件信息
+- 文件名：${fileInfo.fileName}
+- 文件大小：${fileInfo.fileSize}
+- 文件类型：${fileInfo.fileType}
+- 包含光影文件：${fileInfo.hasShaderFiles ? '是' : '否'}
+========================================
+三、错误详情
+- 错误类型：${errorDetails.errorType}
+- 错误信息：${errorDetails.errorMessage}
+- 错误发生步骤：${errorDetails.errorStep}
+- 错误堆栈：
+${errorDetails.errorStack}
+========================================
+四、额外信息
+${Object.entries(errorDetails.extraInfo).map(([key, value]) => `- ${key}：${JSON.stringify(value, null, 2)}`).join('\n')}
+========================================
+错误排查建议：
+1. 检查上传的ZIP文件是否损坏（重新压缩后尝试）
+2. 确认文件为合法Java！（需包含blocks/items等小卡拉咪目录）
+3. 若为图片相关错误，尝试更换！中的图片格式（PNG/JPG）
+4. 更换浏览器重试（推荐Chrome/Firefox最新版）
+            `.trim();
+
+            errorLogData = logText;
+            return logText;
+        }
+
+        // 下载错误日志
+        function downloadErrorLog() {
+            if (!errorLogData) return;
+            const blob = new Blob([errorLogData], { type: 'text/plain; charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `MC纯材质转换错误日志_${new Date().getTime()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 显示错误信息和日志下载按钮
+        function showError(message, error, step, extraInfo = {}) {
+            generateErrorLog(error, step, extraInfo);
+            status.innerHTML = `
+                <span class="error-text">❌ ${message}</span>
+                <br>
+                <button class="error-log-btn" onclick="downloadErrorLog()">下载详细错误日志</button>
+            `;
+        }
+
+        // 清除错误日志和按钮
+        function clearErrorLog() {
+            errorLogData = null;
+            const errorBtn = status.querySelector('.error-log-btn');
+            if (errorBtn) errorBtn.remove();
+            if (status.querySelector('.error-text')) {
+                status.textContent = selectedFile ? `已选择：${selectedFile.name}` : "";
+            }
+        }
+
+        // 核心转换逻辑（重新编排，严格遵循纯材质转换要求）
+        async function startConversion() {
+            if (!selectedFile || !zipInstance) return;
+
+            // 显示加载状态
+            convertBtn.classList.add('loading');
+            convertBtn.disabled = true;
+            status.textContent = "正在初始化转换...";
+            clearErrorLog();
+
+            try {
+                const newZip = new JSZip();
+                const zipFiles = zipInstance.files;
+
+                // 步骤1：校验合法纯！
+                if (!isLegalJavaTexturePack(zipFiles)) {
+                    showError(
+                        "上传文件不是合法纯！！",
+                        new Error("缺少方块/物品/实体等核心小卡拉咪目录"),
+                        "！合法性校验",
+                        { 检测到的文件路径: Object.keys(zipFiles).slice(0, 10) }
+                    );
+                    convertBtn.classList.remove('loading');
+                    convertBtn.disabled = false;
+                    return;
+                }
+
+                // 步骤2：过滤并处理纯小卡拉咪文件
+                status.textContent = "正在处理纯小卡拉咪材质（自动剔除光影）...";
+                const fileEntries = Object.entries(zipFiles);
+                let processedCount = 0;
+
+                for (let i = 0; i < fileEntries.length; i++) {
+                    const [path, fileObj] = fileEntries[i];
+                    // 跳过目录、非允许文件、光影相关文件
+                    if (fileObj.dir || !isAllowedFile(path)) continue;
+
+                    // 显示当前处理进度
+                    const fileName = path.split('/').pop();
+                    status.textContent = `正在处理：${fileName}（${i+1}/${fileEntries.length}）`;
+
+                    // 读取文件内容
+                    const content = await fileObj.async('arraybuffer');
+                    let processedContent = content;
+
+                    // 步骤3：图片尺寸适配（非2^n尺寸自动缩放）
+                    const sizeInfo = await checkImageSize(content);
+                    if (sizeInfo.error) {
+                        throw new Error(`图片处理失败：${sizeInfo.error.message}（文件：${fileName}）`);
+                    }
+                    if (!sizeInfo.valid) {
+                        status.textContent = `正在缩放小卡拉咪：${fileName}（${sizeInfo.width}x${sizeInfo.height}→${getPowerOfTwoSize(sizeInfo.width)}x${getPowerOfTwoSize(sizeInfo.height)}）`;
+                        processedContent = await scaleTextureToPowerOfTwo(
+                            content, sizeInfo.width, sizeInfo.height
+                        );
+                    }
+
+                    // 步骤4：透明材质格式转换（PNG→TGA，支持降级）
+                    if (path.endsWith('.png') && isTransparentTexturePath(path)) {
+                        status.textContent = `正在转换透明材质：${fileName}（PNG→TGA）`;
+                        processedContent = pngToTga(processedContent);
+                    }
+
+                    // 步骤5：转换目录结构并添加到新压缩包（简化重复文件命名）
+                    const bedrockPath = convertJavaPathToBedrock(path);
+                    if (newZip.files[bedrockPath]) {
+                        const [name, ext] = bedrockPath.split('/').pop().split('.');
+                        const dirPath = bedrockPath.replace(`${name}.${ext}`, '');
+                        const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+                        const uniquePath = `${dirPath}${name}_${randomNum}.${ext}`; // 4位随机数避免命名过长
+                        newZip.file(uniquePath, processedContent);
+                    } else {
+                        newZip.file(bedrockPath, processedContent);
+                    }
+
+                    processedCount++;
+                }
+
+                // 校验是否有有效材质文件
+                if (processedCount === 0) {
+                    showError(
+                        "未找到可转换的纯小卡拉咪文件！",
+                        new Error("！中无方块/物品/实体等有效小卡拉咪"),
+                        "小卡拉咪文件检测",
+                        { 检测到的文件总数: Object.keys(zipFiles).length }
+                    );
+                    convertBtn.classList.remove('loading');
+                    convertBtn.disabled = false;
+                    return;
+                }
+
+                // 步骤6：补全基岩版必需核心文件
+                status.textContent = "正在补全！核心文件...";
+                const packName = selectedFile.name.replace('.zip', '');
+                const manifest = createManifest(packName);
+                newZip.file('manifest.json', JSON.stringify(manifest, null, 2));
+                const iconBlob = await createDefaultPackIcon();
+                newZip.file('pack_icon.png', iconBlob);
+
+                // 步骤7：打包生成.mcpack文件
+                status.textContent = "正在生成纯小卡拉咪！...";
+                const mcpackBlob = await newZip.generateAsync({
+                    type: 'blob',
                     compression: 'DEFLATE',
                     compressionOptions: { level: 6 }
                 });
 
+                // 步骤8：自动下载
                 const url = URL.createObjectURL(mcpackBlob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `MC_Converted_${Date.now()}.mcpack`;
+                a.download = `${packName}_Pure_Bedrock.mcpack`;
                 a.click();
-
                 URL.revokeObjectURL(url);
-                status.textContent = "✅ 转换完成！文件已自动下载";
+
+                // 转换完成提示
+                status.innerHTML = `
+                    ✅ O了！（共处理 ${processedCount} 个小卡拉米！）
+                    <br>
+                    <span class="warning-text">⚠️ 光影已自动剔除，仅保留小卡拉米</span>
+                `;
                 selectedFile = null;
+                zipInstance = null;
+                hasShaderFiles = false;
                 fileInput.value = "";
 
             } catch (err) {
-                status.textContent = `❌ 转换失败：${err.message}`;
-                console.error(err);
+                // 错误分类处理
+                const errorStepMap = {
+                    "ZIP文件解析失败": "ZIP文件加载",
+                    "图片加载失败": "小卡拉咪处理",
+                    "小卡拉咪缩放失败": "尺寸适配",
+                    "PNG转TGA失败": "格式转换",
+                    "！校验失败": "合法性检测",
+                    "未找到可转换的纯小卡拉咪文件": "文件过滤"
+                };
+                const errorStep = err.message.includes(':') 
+                    ? errorStepMap[err.message.split(':')[0]] || "未知步骤"
+                    : "未知步骤";
+                
+                showError(
+                    `转换失败：${err.message}`,
+                    err,
+                    errorStep,
+                    { 当前处理的文件: selectedFile?.name, 已处理小卡拉咪数: processedCount || 0 }
+                );
+                console.error("转换错误详情：", err);
+            } finally {
+                // 恢复按钮状态
+                convertBtn.classList.remove('loading');
                 convertBtn.disabled = false;
             }
-        });
+        }
 
         // 初始禁用按钮
         convertBtn.disabled = true;
+
+        // 暴露全局函数
+        window.downloadErrorLog = downloadErrorLog;
     </script>
 </body>
 </html>
