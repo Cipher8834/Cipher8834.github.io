@@ -3,189 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>干嘛....</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>MC 材质包跨版转换器 | Java → 基岩</title>
     <style>
-        /* 基础动画定义 */
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(2deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
-        @keyframes zoomInOut {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+
+        :root {
+            --primary: #6200EE;
+            --primary-light: #BB86FC;
+            --bg-dark: #121212;
+            --card-dark: #1E1E1E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #BBBBBB;
+            --border-radius: 12px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            color: var(--text-primary);
         }
-        /* 滚动平滑效果 */
-        html { scroll-behavior: smooth; }
-        /* 图片容器基础样式 */
-        .cat-img {
-            transition: all 0.3s ease;
-            object-fit: cover;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-dark);
+            border-radius: var(--border-radius);
+            padding: 3rem;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
         }
-        .cat-img:hover {
-            transform: scale(1.03);
-            box-shadow: 0 12px 35px rgba(0,0,0,0.18);
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, var(--primary-light), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 3rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background-color: rgba(98, 0, 238, 0.05);
+        }
+
+        #fileInput {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary-light);
+        }
+
+        .upload-text h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .upload-text p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .convert-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            border: none;
+            border-radius: var(--border-radius);
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(98, 0, 238, 0.4);
+        }
+
+        .convert-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(98, 0, 238, 0.6);
+        }
+
+        .convert-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #status {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            min-height: 1.2rem;
+        }
+
+        .footer {
+            margin-top: 2.5rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen overflow-x-hidden">
-    <!-- 顶部视觉区：主图动态展示 -->
-    <header class="relative w-full h-screen flex items-center justify-center overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-b from-pink-50 to-blue-50 z-0"></div>
-        <!-- 漂浮装饰元素 -->
-        <div class="absolute top-20 left-10 w-20 h-20 opacity-70 animate-float" style="animation-duration: 6s;">
-            <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="w-full h-full object-cover rounded-full" alt="干嘛猫装饰">
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MC 材质包跨版转换器</h1>
+            <p>Java 版 → 基岩版 一键转换 · 本地处理无上传</p>
         </div>
-        <div class="absolute bottom-30 right-15 w-16 h-16 opacity-60 animate-float" style="animation-duration: 8s; animation-delay: 1s;">
-            <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="w-full h-full object-cover rounded-full" alt="干嘛猫装饰">
-        </div>
-        <!-- 主图 -->
-        <div class="relative z-10 w-[80%] max-w-2xl animate-zoomInOut" style="animation-duration: 10s;">
-            <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="w-full h-auto rounded-2xl shadow-2xl" alt="干嘛猫主图">
-        </div>
-        <!-- 向下滚动提示 -->
-        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <i class="fa-solid fa-chevron-down text-gray-400 text-2xl"></i>
-        </div>
-    </header>
 
-    <!-- 图片流区域：网格布局+渐入动画 -->
-    <section class="container mx-auto px-4 py-20">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- 图片1：延迟渐入 -->
-            <div class="cat-card animate-fadeIn" style="animation-delay: 0.2s; animation-duration: 0.8s;">
-                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="cat-img w-full h-80" alt="干嘛猫">
-            </div>
-            <!-- 图片2：延迟渐入 -->
-            <div class="cat-card animate-fadeIn" style="animation-delay: 0.4s; animation-duration: 0.8s;">
-                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="cat-img w-full h-96" alt="干嘛猫">
-            </div>
-            <!-- 图片3：延迟渐入 -->
-            <div class="cat-card animate-fadeIn" style="animation-delay: 0.6s; animation-duration: 0.8s;">
-                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="cat-img w-full h-80" alt="干嘛猫">
-            </div>
-            <!-- 图片4：延迟渐入 -->
-            <div class="cat-card animate-fadeIn" style="animation-delay: 0.8s; animation-duration: 0.8s;">
-                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="cat-img w-full h-96" alt="干嘛猫">
-            </div>
-            <!-- 图片5：延迟渐入 -->
-            <div class="cat-card animate-fadeIn" style="animation-delay: 1s; animation-duration: 0.8s;">
-                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="cat-img w-full h-80" alt="干嘛猫">
-            </div>
-            <!-- 图片6：延迟渐入 -->
-            <div class="cat-card animate-fadeIn" style="animation-delay: 1.2s; animation-duration: 0.8s;">
-                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="cat-img w-full h-96" alt="干嘛猫">
+        <div class="upload-area">
+            <input type="file" id="fileInput" accept=".zip">
+            <div class="upload-icon">📦</div>
+            <div class="upload-text">
+                <h3>点击或拖拽上传 Java 材质包</h3>
+                <p>支持 ZIP 格式 · 转换后为 .mcpack 文件</p>
             </div>
         </div>
-    </section>
 
-    <!-- 全屏沉浸区：点击切换图片 -->
-    <section class="w-full h-[70vh] relative overflow-hidden my-20">
-        <div class="absolute inset-0 bg-black/10 z-0"></div>
-        <div class="relative z-10 w-full h-full flex items-center justify-center">
-            <div id="fullscreen-cat" class="w-[90%] max-w-4xl h-full flex items-center">
-                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="w-full h-auto max-h-[90%] rounded-2xl shadow-xl" alt="干嘛猫全屏">
-            </div>
-        </div>
-        <!-- 切换提示 -->
-        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-gray-500 text-sm">
-            <span>干嘛.....</span>
-        </div>
-    </section>
+        <button class="convert-btn" id="convertBtn">开始转换</button>
+        <div id="status"></div>
 
-    <!-- 底部悬浮交互区 -->
-    <footer class="bg-white py-10 border-t border-gray-100">
-        <div class="container mx-auto px-4 flex flex-col items-center">
-            <div class="w-24 h-24 mb-6 animate-float" style="animation-duration: 7s;">
-                <img src="https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500" class="w-full h-full object-cover rounded-full shadow-lg" alt="干嘛猫图标">
-            </div>
-            <div class="text-gray-400 text-sm">
-                <i class="fa-solid fa-cat mr-2"></i>干嘛.....
-            </div>
+        <div class="footer">
+            <p>本地工具 | 仅处理基础材质 · 复杂材质需手动调整</p>
         </div>
-    </footer>
+    </div>
 
-    <!-- 交互脚本：图片切换+放大查看 -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script>
-        // 图片数组（可替换为更多干嘛猫图片）
-        const catImages = [
-            "https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500",
-            "https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500",
-            "https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500",
-            "https://img2.baidu.com/it/u=3360920905,2752825640&fm=253&fmt=auto&app=120&f=JPEG?w=587&h=500"
-        ];
-        let currentImgIndex = 0;
+        const fileInput = document.getElementById('fileInput');
+        const convertBtn = document.getElementById('convertBtn');
+        const status = document.getElementById('status');
+        let selectedFile = null;
 
-        // 全屏区域图片切换
-        const fullscreenCat = document.getElementById('fullscreen-cat').querySelector('img');
-        fullscreenCat.addEventListener('click', () => {
-            currentImgIndex = (currentImgIndex + 1) % catImages.length;
-            fullscreenCat.style.opacity = 0;
-            setTimeout(() => {
-                fullscreenCat.src = catImages[currentImgIndex];
-                fullscreenCat.style.opacity = 1;
-            }, 300);
+        // 监听文件选择
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                status.textContent = `已选择：${selectedFile.name}`;
+                convertBtn.disabled = false;
+            } else {
+                selectedFile = null;
+                status.textContent = "";
+                convertBtn.disabled = true;
+            }
         });
 
-        // 所有图片点击放大（模态框效果）
-        const allCatImgs = document.querySelectorAll('.cat-img, header img');
-        allCatImgs.forEach(img => {
-            img.addEventListener('click', () => {
-                const modal = document.createElement('div');
-                modal.style.position = 'fixed';
-                modal.style.top = 0;
-                modal.style.left = 0;
-                modal.style.width = '100vw';
-                modal.style.height = '100vh';
-                modal.style.backgroundColor = 'rgba(0,0,0,0.9)';
-                modal.style.zIndex = 9999;
-                modal.style.display = 'flex';
-                modal.style.alignItems = 'center';
-                modal.style.justifyContent = 'center';
-                modal.style.cursor = 'zoom-out';
+        // 生成基岩版manifest.json
+        function createManifest() {
+            return {
+                format_version: 2,
+                header: {
+                    name: "Converted Texture Pack",
+                    description: "Converted from Java Edition",
+                    uuid: self.crypto.randomUUID(),
+                    version: [1, 0, 0],
+                    min_engine_version: [1, 19, 0]
+                },
+                modules: [{
+                    type: "resources",
+                    uuid: self.crypto.randomUUID(),
+                    version: [1, 0, 0]
+                }]
+            };
+        }
 
-                const modalImg = document.createElement('img');
-                modalImg.src = img.src;
-                modalImg.style.maxWidth = '90%';
-                modalImg.style.maxHeight = '90%';
-                modalImg.style.borderRadius = '8px';
+        // 转换逻辑
+        convertBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
 
-                modal.appendChild(modalImg);
-                document.body.appendChild(modal);
-                document.body.style.overflow = 'hidden';
+            const jszip = new JSZip();
+            status.textContent = "正在解析材质包...";
+            convertBtn.disabled = true;
 
-                modal.addEventListener('click', () => {
-                    document.body.removeChild(modal);
-                    document.body.style.overflow = 'auto';
-                });
-            });
-        });
+            try {
+                const zip = await jszip.loadAsync(selectedFile);
+                const newZip = new JSZip();
 
-        // 滚动时图片渐入效果（针对网格布局）
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = 1;
-                    entry.target.style.transform = 'translateY(0)';
+                // 过滤文件并添加到新压缩包
+                for (const [path, fileObj] of Object.entries(zip.files)) {
+                    if (fileObj.dir || path.endsWith('.mcmeta')) continue;
+                    const content = await fileObj.async('arraybuffer');
+                    newZip.file(path, content);
                 }
-            });
-        }, { threshold: 0.1 });
 
-        document.querySelectorAll('.cat-card').forEach(card => {
-            card.style.opacity = 0;
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-            observer.observe(card);
+                // 添加manifest文件
+                const manifest = createManifest();
+                newZip.file('manifest.json', JSON.stringify(manifest, null, 2));
+
+                status.textContent = "正在生成 .mcpack 文件...";
+                // 打包下载
+                const mcpackBlob = await newZip.generateAsync({ 
+                    type: 'blob', 
+                    compression: 'DEFLATE',
+                    compressionOptions: { level: 6 }
+                });
+
+                const url = URL.createObjectURL(mcpackBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `MC_Converted_${Date.now()}.mcpack`;
+                a.click();
+
+                URL.revokeObjectURL(url);
+                status.textContent = "✅ 转换完成！文件已自动下载";
+                selectedFile = null;
+                fileInput.value = "";
+
+            } catch (err) {
+                status.textContent = `❌ 转换失败：${err.message}`;
+                console.error(err);
+                convertBtn.disabled = false;
+            }
         });
+
+        // 初始禁用按钮
+        convertBtn.disabled = true;
     </script>
 </body>
 </html>
